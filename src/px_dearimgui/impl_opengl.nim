@@ -8,7 +8,7 @@
 ##
 ## HACK: To be honest, there are a lot of things to optimize in here if you have control of every step.
 
-import imgui
+import private/imgui
 import gl
 
 var
