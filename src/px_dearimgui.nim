@@ -1,2 +1,2 @@
-import px_dearimgui/imgui
+import imgui
 export imgui

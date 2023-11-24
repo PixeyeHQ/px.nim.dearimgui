@@ -12,8 +12,8 @@
 
 {.warning[HoleEnumConv]:off.}
 import times
-import sdl
-
+import vendors/sdl
+import imgui
 
 var
   gWindow: sdl.Window
