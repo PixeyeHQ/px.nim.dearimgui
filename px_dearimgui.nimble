@@ -1,8 +1,10 @@
-version     = "0.0.0"
-author      = "Your name"
-description = "Description of your library"
-license     = "MIT"
+# Package
+version       = "0.0.0"
+author        = "Pixeye Games"
+description   = "Dear Imgui"
+license       = "MIT"
+srcDir        = "src"
 
-srcDir = "src"
 
-requires "nim >= 1.2.2"
+# Dependencies
+requires "nim >= 1.9.3"
