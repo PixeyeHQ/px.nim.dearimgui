@@ -172,8 +172,8 @@ proc igSDL2Init(window: sdl.Window): bool =
   # Check and store if we are on Wayland
   #g_MouseCanUseGlobalState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0
   # HELP to translate
-  when defined(WIN32):
-    echo "win32"
+  # when defined(WIN32):
+  #   echo "win32"
 
   return true
 
