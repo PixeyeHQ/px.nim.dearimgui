@@ -8,8 +8,9 @@
 ##
 ## HACK: To be honest, there are a lot of things to optimize in here if you have control of every step.
 
-import ../dearimgui, nimgl/opengl
+import ../dearimgui, ../vendors/gl
 
+let EGL_FLOAT* = 0x1406.GLenum
 var
   gGlslVersionString: cstring = "#version 330 core"
   gFontTexture: uint32 = 0
@@ -110,17 +111,18 @@ void main() {
   Out_Color = Frag_Color * texture(Texture, Frag_UV.st);
 }
   """
+  
   vertex_shader_glsl = $gGlslVersionString & "\n" & $vertex_shader_glsl
   fragment_shader_glsl = $gGlslVersionString & "\n" & $fragment_shader_glsl
-  var cstr_vertex_shader_glsl = vertex_shader_glsl.cstring
-  var cstr_fragment_shader_glsl = fragment_shader_glsl.cstring
+ # var cstr_vertex_shader_glsl = vertex_shader_glsl.cstring
+  #var cstr_fragment_shader_glsl = fragment_shader_glsl.cstring
   gVertHandle = glCreateShader(GL_VERTEX_SHADER)
-  glShaderSource(gVertHandle, 1, cstr_vertex_shader_glsl.addr, nil)
+  glShaderSource(gVertHandle, 1.GLSizei, cast[cstringArray](vertex_shader_glsl.addr), nil)
   glCompileShader(gVertHandle)
   igOpenGL3CheckShader(gVertHandle, "vertex shader")
 
   gFragHandle = glCreateShader(GL_FRAGMENT_SHADER)
-  glShaderSource(gFragHandle, 1, cstr_fragment_shader_glsl.addr, nil)
+  glShaderSource(gFragHandle, 1.GLSizei, cast[cstringArray](fragment_shader_glsl.addr), nil)
   glCompileShader(gFragHandle)
   igOpenGL3CheckShader(gFragHandle, "fragment shader")
 

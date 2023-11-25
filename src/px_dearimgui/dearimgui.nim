@@ -61,7 +61,7 @@ else:
     compile: "px_dearimgui/private/cimgui/imgui/imgui_tables.cpp",
     compile: "px_dearimgui/private/cimgui/imgui/imgui_widgets.cpp",
     compile: "px_dearimgui/private/cimgui/imgui/imgui_demo.cpp".}
-  {.pragma: imgui_header, header: currentSourceDir() & "/px_dearimgui/private/ncimgui.h".}
+  {.pragma: imgui_header, header: currentSourceDir() & "/private/ncimgui.h".}
 
 # Enums
 type
