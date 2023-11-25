@@ -11,7 +11,6 @@
 ##
 
 {.warning[HoleEnumConv]:off.}
-import times
 import vendors/sdl
 import imgui
 
@@ -20,11 +19,6 @@ var
   gMouseJustPressed: array[3, bool]
   gMouseCursors: array[ImGuiMouseCursor.high.int32 + 1, sdl.Cursor]
   gClipboardTextData: pointer
-
-
-proc getTicks(): float64 =
-  let curTime = times.getTime()
-  result = curTime.toUnix().float64 + curTime.nanosecond() / 1000000000
 
 
 proc igSDL2GetClipboardText(userData: pointer): cstring {.cdecl.} =
