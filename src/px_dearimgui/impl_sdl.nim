@@ -12,7 +12,7 @@
 
 {.warning[HoleEnumConv]:off.}
 import vendors/sdl
-import imgui
+import dearimgui
 
 var
   gWindow: pointer
