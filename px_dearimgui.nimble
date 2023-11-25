@@ -1,5 +1,5 @@
 # Package
-version       = "2023.25.1"
+version       = "2023.25.2"
 author        = "Pixeye Games"
 description   = "Dear Imgui"
 license       = "MIT"
