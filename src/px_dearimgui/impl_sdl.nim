@@ -16,7 +16,7 @@ import vendors/sdl
 import imgui
 
 var
-  gWindow: sdl.Window
+  gWindow: pointer
   gTime: float64
   gMouseJustPressed: array[3, bool]
   gMouseCursors: array[ImGuiMouseCursor.high.int32 + 1, sdl.Cursor]
@@ -177,7 +177,7 @@ proc igSDL2Init(window: sdl.Window): bool =
   return true
 
 
-proc igSDL2InitForOpenGL*(window: sdl.Window, sdlGLContext: sdl.GLContext ): bool=
+proc igSDL2InitForOpenGL*(window: pointer, sdlGLContext: sdl.GLContext ): bool=
   return igSDL2Init(window)
 
 
@@ -245,7 +245,7 @@ proc igSDL2UpdateMouseCursor() =
 #   # TODO
 
 
-proc igSDL2NewFrame*(window : sdl.Window) =
+proc igSDL2NewFrame*(window : pointer) =
   let io = igGetIO()
   assert io.fonts.isBuilt()
 

@@ -1,2 +1,2 @@
-import px_dearimgui/imgui_api
-export imgui_api
+import px_dearimgui/dearimgui
+export dearimgui
