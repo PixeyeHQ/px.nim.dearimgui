@@ -17,7 +17,6 @@ import imgui
 
 var
   gWindow: pointer
-  gTime: float64
   gMouseJustPressed: array[3, bool]
   gMouseCursors: array[ImGuiMouseCursor.high.int32 + 1, sdl.Cursor]
   gClipboardTextData: pointer
@@ -245,7 +244,7 @@ proc igSDL2UpdateMouseCursor() =
 #   # TODO
 
 
-proc igSDL2NewFrame*(window : pointer) =
+proc igSDL2NewFrame*(window : pointer, dt: float) =
   let io = igGetIO()
   assert io.fonts.isBuilt()
 
@@ -266,13 +265,9 @@ proc igSDL2NewFrame*(window : pointer) =
   if w > 0 and h > 0:
     io.displayFramebufferScale = ImVec2(x: displayW / w, y: displayH / h)
 
-  # Setup time step (we don't use SDL_GetTicks() because it is using millisecond resolution)
-  var currentTime = getTicks()
-  io.deltaTime = if gTime > 0.0f: (currentTime - gTime).float32 else: (1.0 / 60.0)
-  gTime = currentTime
+  io.deltaTime = dt
 
   igSDL2UpdateMousePosAndButtons()
   igSDL2UpdateMouseCursor()
-  # igSDL2UpdateGamepads()
 
 {.warning[HoleEnumConv]:on.}
