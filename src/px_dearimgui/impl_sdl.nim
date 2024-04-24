@@ -157,15 +157,10 @@ proc igSDL2Init(window: sdl.Window): bool =
   setCursor(ImGuiMouseCursor.NotAllowed, sdl.SYSTEM_CURSOR_NO)
 
   # set clipboard functions
-  io.setClipboardTextFn = igSDL2SetClipboardText
-  io.getClipboardTextFn = igSDL2GetClipboardText
-  io.clipboardUserData = nil
-
-  # Check and store if we are on Wayland
-  #g_MouseCanUseGlobalState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0
-  # HELP to translate
-  # when defined(WIN32):
-  #   echo "win32"
+  when not defined(emscripten):
+    io.setClipboardTextFn = igSDL2SetClipboardText
+    io.getClipboardTextFn = igSDL2GetClipboardText
+    io.clipboardUserData  = nil
 
   return true
 
