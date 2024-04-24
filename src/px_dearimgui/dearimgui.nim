@@ -35,6 +35,12 @@ when not defined(cpp) or defined(cimguiDLL):
 else:
   type ImDrawIdx* = uint32
 ## Tentative workaround [end]
+type ConstCString* {.importc: "const char*".} = object
+
+converter toCString*(self: ConstCString): cstring {.importc: "(char*)", noconv, nodecl.}
+converter toConstCString*(self: cstring): ConstCString {.importc: "(const char*)", noconv, nodecl.}
+proc `$`*(self: ConstCString): string = $(self.toCString())
+
 
 proc currentSourceDir(): string {.compileTime.} =
   result = currentSourcePath().replace("\\", "/")
@@ -1640,7 +1646,9 @@ type
     backendRendererUserData* {.importc: "BackendRendererUserData".}: pointer
     backendLanguageUserData* {.importc: "BackendLanguageUserData".}: pointer
     getClipboardTextFn* {.importc: "GetClipboardTextFn".}: proc(user_data: pointer): cstring {.cdecl, varargs.}
-    setClipboardTextFn* {.importc: "SetClipboardTextFn".}: proc(user_data: pointer, text: cstring): void {.cdecl, varargs.}
+    setClipboardTextFn* {.importc: "SetClipboardTextFn".}: proc(user_data: pointer, text: ConstCString): void {.cdecl, varargs.}
+    
+    
     clipboardUserData* {.importc: "ClipboardUserData".}: pointer
     setPlatformImeDataFn* {.importc: "SetPlatformImeDataFn".}: proc(viewport: ptr ImGuiViewport, data: ptr ImGuiPlatformImeData): void {.cdecl, varargs.}
     unusedPadding* {.importc: "_UnusedPadding".}: pointer

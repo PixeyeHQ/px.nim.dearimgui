@@ -1,18 +1,10 @@
-# Copyright 2018, NimGL contributors.
-
-## ImGUI OpenGL (modern OpenGL with shaders / programmatic pipeline) Implementation
-## ====
-## Implementation based on the imgui examples implementations.
-## Feel free to use and modify this implementation.
-## This needs to be used along with a Platform Binding (e.g. GLFW, SDL, Win32, custom..)
-##
-## HACK: To be honest, there are a lot of things to optimize in here if you have control of every step.
+# Based on ImGUI Opengl NimGL
 
 import ../dearimgui, ../vendors/gl
 
 let EGL_FLOAT* = 0x1406.GLenum
 var
-  gGlslVersionString: cstring = "#version 330 core"
+  gGlslVersionString: cstring = "#version 100"
   gFontTexture: uint32 = 0
   gShaderHandle: uint32 = 0
   gVertHandle: uint32 = 0
@@ -28,7 +20,7 @@ var
 proc igOpenGL3Init*(): bool =
   ## Initiate Opengl, this proc does nothing here because I assume that you are using modern opengl 3.2>.
   ## If you actually need to use lower specs open and issue or PR the fix please.
-  # @TODO: add opengles support
+
   return true
 
 proc igOpenGL3CheckProgram(handle: uint32, desc: string) =
@@ -89,29 +81,57 @@ proc igOpenGL3CreateDeviceObjects() =
   glGetIntegerv(GL_VERTEX_ARRAY_BINDING, last_vertex_array.addr)
 
   # @NOTE: if you need the other shader versions, PR them please.
+#   var vertex_shader_glsl: string = """
+# layout (location = 0) in vec2 Position;
+# layout (location = 1) in vec2 UV;
+# layout (location = 2) in vec4 Color;
+# uniform mat4 ProjMtx;
+# out vec2 Frag_UV;
+# out vec4 Frag_Color;
+# void main() {
+#   Frag_UV = UV;
+#   Frag_Color = Color;
+#   gl_Position = ProjMtx * vec4(Position.xy, 0, 1);
+# }
+#   """
+
+#   var fragment_shader_glsl: string = """
+# in vec2 Frag_UV;
+# in vec4 Frag_Color;
+# uniform sampler2D Texture;
+# layout (location = 0) out vec4 Out_Color;
+# void main() {
+#   Out_Color = Frag_Color * texture(Texture, Frag_UV.st);
+# }
+#   """
+
   var vertex_shader_glsl: string = """
-layout (location = 0) in vec2 Position;
-layout (location = 1) in vec2 UV;
-layout (location = 2) in vec4 Color;
 uniform mat4 ProjMtx;
-out vec2 Frag_UV;
-out vec4 Frag_Color;
+attribute vec2 Position;
+attribute vec2 UV;
+attribute vec4 Color;
+varying vec2 Frag_UV;
+varying vec4 Frag_Color;
+
 void main() {
   Frag_UV = UV;
   Frag_Color = Color;
-  gl_Position = ProjMtx * vec4(Position.xy, 0, 1);
+  gl_Position = ProjMtx * vec4(Position, 0.0, 1.0);
 }
-  """
+"""
   var fragment_shader_glsl: string = """
-in vec2 Frag_UV;
-in vec4 Frag_Color;
-uniform sampler2D Texture;
-layout (location = 0) out vec4 Out_Color;
+precision mediump float;
+
+varying vec2 Frag_UV;            // Input UV coordinates of the fragment
+varying vec4 Frag_Color;         // Input color of the fragment
+uniform sampler2D Texture;       // 2D texture sampler as a uniform
+
 void main() {
-  Out_Color = Frag_Color * texture(Texture, Frag_UV.st);
+  gl_FragColor = Frag_Color * texture2D(Texture, Frag_UV);
+  // Modulate the fragment color with the color sampled from a texture at UV coordinates
 }
-  """
-  
+"""
+
   vertex_shader_glsl = $gGlslVersionString & "\n" & $vertex_shader_glsl
   fragment_shader_glsl = $gGlslVersionString & "\n" & $fragment_shader_glsl
  # var cstr_vertex_shader_glsl = vertex_shader_glsl.cstring

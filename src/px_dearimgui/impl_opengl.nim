@@ -25,7 +25,7 @@ else:
   proc igOpenGL3Init*(glslVersion:string): bool =
     0 != ImGuiImplOpengl3Init(glslVersion.cstring)
   proc igOpenGL3Init*(): bool =
-    const glsl_version = "#version 130" # Default is OpenGL 3.0
+    const glsl_version = "#version 100" # Default is OpenGL 3.0
     igOpenGl3Init(glsl_version)
   proc igOpenGL3Shutdown*() : void {.cdecl, importc: "ImGui_ImplOpenGL3_Shutdown".}
   proc igOpenGL3NewFrame*() : void {.cdecl, importc: "ImGui_ImplOpenGL3_NewFrame".}

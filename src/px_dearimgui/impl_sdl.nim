@@ -21,16 +21,16 @@ var
   gClipboardTextData: pointer
 
 
-proc igSDL2GetClipboardText(userData: pointer): cstring {.cdecl.} =
+proc igSDL2GetClipboardText*(userData: pointer): cstring {.cdecl.} =
   if gClipboardTextData != nil:
     sdl.free(gClipboardTextData)
   gClipboardTextData = sdl.getClipboardText()
   return cast[cstring](gClipboardTextData)
 
 
-proc igSDL2SetClipboardText(userData: pointer, text: cstring): void {.cdecl.} =
-  discard sdl.setClipboardText(text)
 
+proc igSDL2SetClipboardText*(userData: pointer, text: ConstCString): void {.cdecl,varargs.} =
+  discard sdl.setClipboardText(text)
 
 ## You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
 ## - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
@@ -161,7 +161,12 @@ proc igSDL2Init(window: sdl.Window): bool =
     io.setClipboardTextFn = igSDL2SetClipboardText
     io.getClipboardTextFn = igSDL2GetClipboardText
     io.clipboardUserData  = nil
-
+   # _IMGUISetClipboardText
+  # Check and store if we are on Wayland
+  #g_MouseCanUseGlobalState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0
+  # HELP to translate
+  # when defined(WIN32):
+  #   echo "win32"
   return true
 
 
