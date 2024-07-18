@@ -1,2 +1,2 @@
-import sdl2_nim/sdl
-export sdl
+import sdl2
+export sdl2
