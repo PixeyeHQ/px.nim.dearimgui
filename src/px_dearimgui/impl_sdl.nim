@@ -17,21 +17,20 @@ import dearimgui
 var
   gWindow: pointer
   gMouseJustPressed: array[3, bool]
-  gMouseCursors: array[ImGuiMouseCursor.high.int32 + 1, CursorPtr]
-  gClipboardTextData: cstring
+  gMouseCursors: array[ImGuiMouseCursor.high.int32 + 1, sdl.Cursor]
+  gClipboardTextData: pointer
 
 
 proc igSDL2GetClipboardText*(userData: pointer): cstring {.cdecl.} =
   if gClipboardTextData != nil:
-    freeClipboardText(gClipboardTextData)
-   # sdl2.free(gClipboardTextData)
-  gClipboardTextData = sdl2.getClipboardText()
-  #return cast[cstring](gClipboardTextData)
+    sdl.free(gClipboardTextData)
+  gClipboardTextData = sdl.getClipboardText()
+  return cast[cstring](gClipboardTextData)
 
 
 
 proc igSDL2SetClipboardText*(userData: pointer, text: ConstCString): void {.cdecl,varargs.} =
-  discard sdl2.setClipboardText(text)
+  discard sdl.setClipboardText(text)
 
 ## You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
 ## - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
@@ -49,10 +48,10 @@ proc charArrayToString*(a: openarray[char]): string =
     add(result, $c)
 
 
-proc igSDL2_ProcessEvent*(event: sdl2.Event) =
+proc igSDL2_ProcessEvent*(event: sdl.Event) =
   let io = igGetIO()
 
-  if event.kind == sdl2.MOUSEWHEEL:
+  if event.kind == sdl.MOUSEWHEEL:
     if event.wheel.x > 0:
       io.mouseWheelH += 1
     elif event.wheel.x < 0:
@@ -63,25 +62,25 @@ proc igSDL2_ProcessEvent*(event: sdl2.Event) =
     elif event.wheel.y < 0:
       io.mouseWheel -= 1
 
-  elif event.kind == sdl2.MOUSEBUTTONDOWN:
-    if event.button.button == sdl2.BUTTON_LEFT:
+  elif event.kind == sdl.MOUSEBUTTONDOWN:
+    if event.button.button == sdl.BUTTON_LEFT:
       gMouseJustPressed[0] = true
-    if event.button.button == sdl2.BUTTON_RIGHT:
+    if event.button.button == sdl.BUTTON_RIGHT:
       gMouseJustPressed[1] = true
-    if event.button.button == sdl2.BUTTON_MIDDLE:
+    if event.button.button == sdl.BUTTON_MIDDLE:
       gMouseJustPressed[2] = true
 
-  elif event.kind == sdl2.TEXTINPUT:
+  elif event.kind == sdl.TEXTINPUT:
     # XXX Why can't i cast this?
     let data = charArrayToString(event.text.text)
     io.addInputCharactersUTF8(data.cstring)
 
-  elif event.kind == sdl2.KEYDOWN or event.kind == KEYUP:
+  elif event.kind == sdl.KEYDOWN or event.kind == KEYUP:
     let key = event.key.keysym.scancode.int32
 
-    io.keysDown[key] = event.kind == sdl2.KEYDOWN
+    io.keysDown[key] = event.kind == sdl.KEYDOWN
 
-    let modState = sdl2.getModState().ord()
+    let modState = sdl.getModState().ord()
     io.keyShift = (modState and KMOD_SHIFT.int) != 0
     io.keyCtrl = (modState and KMOD_CTRL.int) != 0
     io.keyAlt = (modState and KMOD_ALT.int) != 0
@@ -92,14 +91,14 @@ proc igSDL2_ProcessEvent*(event: sdl2.Event) =
     else:
       io.keySuper = (modState and KMOD_GUI.int) != 0
 
-  elif event.kind == sdl2.WINDOWEVENT:
-     if event.window.event == sdl2.WINDOWEVENT_FOCUS_GAINED:
+  elif event.kind == sdl.WINDOWEVENT:
+     if event.window.event == sdl.WINDOWEVENT_FOCUS_GAINED:
        io.addFocusEvent(true)
-     elif event.window.event == sdl2.WINDOWEVENT_FOCUS_LOST:
+     elif event.window.event == sdl.WINDOWEVENT_FOCUS_LOST:
        io.addFocusEvent(false)
 
 
-proc igSDL2Init(window: WindowPtr): bool =
+proc igSDL2Init(window: sdl.Window): bool =
   # Set the window globally
   gWindow = window
 
@@ -116,46 +115,46 @@ proc igSDL2Init(window: WindowPtr): bool =
   io.backendPlatformName = "imgui_impl_sdl"
 
   # Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
-  proc setKeyMap(x: typeof(ImGuiKey.Tab), y: typeof(SDL_SCANCODE_TAB)) =
+  proc setKeyMap(x: typeof(ImGuiKey.Tab), y: typeof(sdl.SCANCODE_TAB)) =
     io.keyMap[x.int32] = y.int32
 
-  setKeyMap(ImGuiKey.Tab, SDL_SCANCODE_TAB)
-  setKeyMap(ImGuiKey.LeftArrow, SDL_SCANCODE_LEFT)
-  setKeyMap(ImGuiKey.LeftArrow, SDL_SCANCODE_LEFT)
-  setKeyMap(ImGuiKey.RightArrow, SDL_SCANCODE_RIGHT)
-  setKeyMap(ImGuiKey.UpArrow, SDL_SCANCODE_UP)
-  setKeyMap(ImGuiKey.DownArrow, SDL_SCANCODE_DOWN)
-  setKeyMap(ImGuiKey.PageUp, SDL_SCANCODE_PAGEUP)
-  setKeyMap(ImGuiKey.PageDown, SDL_SCANCODE_PAGEDOWN)
-  setKeyMap(ImGuiKey.Home, SDL_SCANCODE_HOME)
-  setKeyMap(ImGuiKey.End, SDL_SCANCODE_END)
-  setKeyMap(ImGuiKey.Insert, SDL_SCANCODE_INSERT)
-  setKeyMap(ImGuiKey.Delete, SDL_SCANCODE_DELETE)
-  setKeyMap(ImGuiKey.Backspace, SDL_SCANCODE_BACKSPACE)
-  setKeyMap(ImGuiKey.Space, SDL_SCANCODE_SPACE)
-  setKeyMap(ImGuiKey.Enter, SDL_SCANCODE_RETURN)
-  setKeyMap(ImGuiKey.Escape, SDL_SCANCODE_ESCAPE)
-  setKeyMap(ImGuiKey.KeyPadEnter, SDL_SCANCODE_KP_ENTER)
-  setKeyMap(ImGuiKey.A, SDL_SCANCODE_A)
-  setKeyMap(ImGuiKey.C, SDL_SCANCODE_C)
-  setKeyMap(ImGuiKey.V, SDL_SCANCODE_V)
-  setKeyMap(ImGuiKey.X, SDL_SCANCODE_X)
-  setKeyMap(ImGuiKey.Y, SDL_SCANCODE_Y)
-  setKeyMap(ImGuiKey.Z, SDL_SCANCODE_Z)
+  setKeyMap(ImGuiKey.Tab, sdl.SCANCODE_TAB)
+  setKeyMap(ImGuiKey.LeftArrow, sdl.SCANCODE_LEFT)
+  setKeyMap(ImGuiKey.LeftArrow, sdl.SCANCODE_LEFT)
+  setKeyMap(ImGuiKey.RightArrow, sdl.SCANCODE_RIGHT)
+  setKeyMap(ImGuiKey.UpArrow, sdl.SCANCODE_UP)
+  setKeyMap(ImGuiKey.DownArrow, sdl.SCANCODE_DOWN)
+  setKeyMap(ImGuiKey.PageUp, sdl.SCANCODE_PAGEUP)
+  setKeyMap(ImGuiKey.PageDown, sdl.SCANCODE_PAGEDOWN)
+  setKeyMap(ImGuiKey.Home, sdl.SCANCODE_HOME)
+  setKeyMap(ImGuiKey.End, sdl.SCANCODE_END)
+  setKeyMap(ImGuiKey.Insert, sdl.SCANCODE_INSERT)
+  setKeyMap(ImGuiKey.Delete, sdl.SCANCODE_DELETE)
+  setKeyMap(ImGuiKey.Backspace, sdl.SCANCODE_BACKSPACE)
+  setKeyMap(ImGuiKey.Space, sdl.SCANCODE_SPACE)
+  setKeyMap(ImGuiKey.Enter, sdl.SCANCODE_RETURN)
+  setKeyMap(ImGuiKey.Escape, sdl.SCANCODE_ESCAPE)
+  setKeyMap(ImGuiKey.KeyPadEnter, sdl.SCANCODE_KP_ENTER)
+  setKeyMap(ImGuiKey.A, sdl.SCANCODE_A)
+  setKeyMap(ImGuiKey.C, sdl.SCANCODE_C)
+  setKeyMap(ImGuiKey.V, sdl.SCANCODE_V)
+  setKeyMap(ImGuiKey.X, sdl.SCANCODE_X)
+  setKeyMap(ImGuiKey.Y, sdl.SCANCODE_Y)
+  setKeyMap(ImGuiKey.Z, sdl.SCANCODE_Z)
 
   # Load mouse cursors
-  proc setCursor(x: typeof(ImGuiMouseCursor.Arrow), y: typeof(SDL_SYSTEM_CURSOR_ARROW)) =
-    gMouseCursors[x.int32] = sdl2.createSystemCursor(y)
+  proc setCursor(x: typeof(ImGuiMouseCursor.Arrow), y: typeof(sdl.SYSTEM_CURSOR_ARROW)) =
+    gMouseCursors[x.int32] = sdl.createSystemCursor(y)
 
-  setCursor(ImGuiMouseCursor.Arrow, SDL_SYSTEM_CURSOR_ARROW)
-  setCursor(ImGuiMouseCursor.TextInput, SDL_SYSTEM_CURSOR_IBEAM)
-  setCursor(ImGuiMouseCursor.ResizeAll, SDL_SYSTEM_CURSOR_SIZEALL)
-  setCursor(ImGuiMouseCursor.ResizeNS, SDL_SYSTEM_CURSOR_SIZENS)
-  setCursor(ImGuiMouseCursor.ResizeEW, SDL_SYSTEM_CURSOR_SIZEWE)
-  setCursor(ImGuiMouseCursor.ResizeNESW, SDL_SYSTEM_CURSOR_SIZENESW)
-  setCursor(ImGuiMouseCursor.ResizeNWSE, SDL_SYSTEM_CURSOR_SIZENWSE)
-  setCursor(ImGuiMouseCursor.Hand, SDL_SYSTEM_CURSOR_HAND)
-  setCursor(ImGuiMouseCursor.NotAllowed, SDL_SYSTEM_CURSOR_NO)
+  setCursor(ImGuiMouseCursor.Arrow, sdl.SYSTEM_CURSOR_ARROW)
+  setCursor(ImGuiMouseCursor.TextInput, sdl.SYSTEM_CURSOR_IBEAM)
+  setCursor(ImGuiMouseCursor.ResizeAll, sdl.SYSTEM_CURSOR_SIZEALL)
+  setCursor(ImGuiMouseCursor.ResizeNS, sdl.SYSTEM_CURSOR_SIZENS)
+  setCursor(ImGuiMouseCursor.ResizeEW, sdl.SYSTEM_CURSOR_SIZEWE)
+  setCursor(ImGuiMouseCursor.ResizeNESW, sdl.SYSTEM_CURSOR_SIZENESW)
+  setCursor(ImGuiMouseCursor.ResizeNWSE, sdl.SYSTEM_CURSOR_SIZENWSE)
+  setCursor(ImGuiMouseCursor.Hand, sdl.SYSTEM_CURSOR_HAND)
+  setCursor(ImGuiMouseCursor.NotAllowed, sdl.SYSTEM_CURSOR_NO)
 
   # set clipboard functions
   when not defined(emscripten):
@@ -171,7 +170,7 @@ proc igSDL2Init(window: WindowPtr): bool =
   return true
 
 
-proc igSDL2InitForOpenGL*(window: WindowPtr, sdlGLContext: GlContextPtr ): bool=
+proc igSDL2InitForOpenGL*(window: pointer, sdlGLContext: sdl.GLContext ): bool=
   return igSDL2Init(window)
 
 
@@ -180,14 +179,13 @@ proc igSDL2Shutdown*() =
 
   # Destroy last known clipboard data
   if gClipboardTextData != nil:
-    freeClipboardText(gClipboardTextData)
-   # sdl2.free(addr gClipboardTextData)
+    sdl.free(addr gClipboardTextData)
 
   gClipboardTextData = nil
 
   # Destroy SDL mouse cursors
   for i in 0 ..< ImGuiMouseCursor.high.int32 + 1:
-    sdl2.freeCursor(gMouseCursors[i])
+    sdl.freeCursor(gMouseCursors[i])
     gMouseCursors[i] = nil
 
 
@@ -195,7 +193,7 @@ proc igSDL2UpdateMousePosAndButtons() =
   let io = igGetIO()
 
   var mouse_x_local, mouse_y_local: cint
-  let mouseState = sdl2.getMouseState(addr mouse_x_local, addr  mouse_y_local).uint8
+  let mouseState = sdl.getMouseState(addr mouse_x_local, addr  mouse_y_local).int64
   let mouseButtons = [(BUTTON_LMASK and mouseState) > 0,
                       (BUTTON_MMASK and mouseState) > 0,
                       (BUTTON_RMASK and mouseState) > 0]
@@ -209,7 +207,7 @@ proc igSDL2UpdateMousePosAndButtons() =
   let focused = true
   if focused:
     if io.wantSetMousePos:
-      sdl2.warpMouseInWindow(nil, mousePosBackup.x.cint, mousePosBackup.y.cint)
+      sdl.warpMouseInWindow(nil, mousePosBackup.x.cint, mousePosBackup.y.cint)
     else:
       io.mousePos = ImVec2(x: mouse_x_local.float32, y: mouse_y_local.float32)
 
@@ -223,7 +221,7 @@ proc igSDL2UpdateMouseCursor() =
   var igCursor: ImGuiMouseCursor = igGetMouseCursor()
   if igCursor == ImGuiMouseCursor.None or io.mouseDrawCursor:
     # Hide SDL2 mouse cursor if imgui is drawing it or if it wants no cursor
-    discard sdl2.showCursor(false)
+    discard sdl.showCursor(0)
 
   else:
     # Show SDL2 mouse cursor
@@ -231,8 +229,8 @@ proc igSDL2UpdateMouseCursor() =
     if cursor == nil:
       cursor = gMouseCursors[ImGuiMouseCursor.Arrow.int32]
 
-    sdl2.setCursor(cursor)
-    discard sdl2.showCursor(true)
+    sdl.setCursor(cursor)
+    discard sdl.showCursor(1)
 
 
 # proc igSDL2UpdateGamepads() =
@@ -240,21 +238,22 @@ proc igSDL2UpdateMouseCursor() =
 #   # TODO
 
 
-proc igSDL2NewFrame*(window : WindowPtr, dt: float) =
+proc igSDL2NewFrame*(window : pointer, dt: float) =
   let io = igGetIO()
   assert io.fonts.isBuilt()
 
   # Setup display size (every frame to accommodate for window resizing)
   var
-    w: cint
-    h: cint
+    w: int32
+    h: int32
     displayW: int32
     displayH: int32
 
-  getSize(window, w, h)
-  glGetDrawableSize(window, displayW, displayH)
-  if (getFlags(window) and SDL_WINDOW_MINIMIZED) != 0:
-    (w, h) = (0.cint, 0.cint)
+  sdl.getWindowSize(window, w.addr, h.addr)
+  sdl.glGetDrawableSize(window, displayW.addr, displayH.addr)
+
+  if (sdl.getWindowFlags(window) and sdl.WINDOW_MINIMIZED) != 0:
+    (w, h) = (0, 0)
 
   io.displaySize = ImVec2(x: w.float32, y: h.float32)
   if w > 0 and h > 0:
